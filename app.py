@@ -66,6 +66,11 @@ def test_disconnect():
     print('Client disconnected')
 
 
+@socketio.on('my ping')
+def test_connect():
+    emit('my ping')
+
+
 if __name__ == '__main__':
     socketio.run(app, port=5001)
     # eventlet.serve(eventlet.listen(('127.0.0.1', 5001)), app)
