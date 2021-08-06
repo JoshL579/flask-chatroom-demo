@@ -17,6 +17,16 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/frontdesk', methods=['GET'])
+def frontdesk():
+    return render_template('frontdesk.html')
+
+
+@app.route('/client', methods=['GET'])
+def client():
+    return render_template('client.html')
+
+
 @socketio.on('my event')
 def test_message(message):
     print(message)
@@ -26,7 +36,10 @@ def test_message(message):
 @socketio.on('my broadcast event')
 def test_broadcast(message):
     print(message)
-    emit('my response', {'data': message['data']}, broadcast=True)
+    if message.get('user'):
+        emit('response', {'data': message['data'], 'user': message['user']}, broadcast=True)
+    else:
+        emit('my response', {'data': message['data']}, broadcast=True)
 
 
 @socketio.on('join')
