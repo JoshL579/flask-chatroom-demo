@@ -18,56 +18,56 @@
             </div>
         </div>
         <div class="input-container">
-            <input type="text" id="input">
+            <input type="text" id="input" placeholder="Enter Your Message Here">
             <button id="send">Send</button>
         </div>
     </div>
     <script>
         window.onload = () => {
+            //init
             var socket = io('http://127.0.0.1:5001');
-            const user="client"
+            const user="client";
+
+            //handle msg send
             document.getElementById('send').addEventListener('click', () => {
                 socket.emit('my broadcast event', {data: $('#input').val(), user: user});
             })
+
+            //handle msg receive
             socket.on('response', function(msg, cb) {
-                // $('#log').append('<br>' + $('<div/>').text('-' + (new Date).toLocaleTimeString('en-GB') + ': ' + msg.data).html());
-                console.log(msg.user)
-                if (msg.user === 'client') {
-                    $('#history').append(
-                        `<div class="item right">
-                            <div class="item-content right">
-                                <span>
-                                    ${msg.data}
-                                </span>
-                            </div>
-                        </div>`
-                    );
-                } else {
-                    $('#history').append(
-                        `<div class="item left">
-                            <div class="item-content left">
-                                <span>
-                                    ${msg.data}
-                                </span>
-                            </div>
-                        </div>`
-                    );
-                }                
+                $('#history').append(
+                    `<div class="item ${msg.user===user?'right': 'left'}">
+                        <div class="item-content ${msg.user===user?'right': 'left'}">
+                            <span>
+                                ${msg.data}
+                            </span>
+                        </div>
+                    </div>`
+                );               
                 if (cb) cb();
+            });
+            
+            // bind enter key
+            $(document).keypress(function(e){
+                if (e.which == 13){
+                    $("#send").click();
+                }
             });
         }
     </script>
     <style>
         .container {
+            box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
             max-width: 400px;
-            border: 1px solid #ddd;
             border-radius: 15px;
             text-align: center;
             padding: 15px;
             margin: 15px auto;
         }
         .history-container {
-            min-height: 300px;
+            height: 500px;
+            overflow: auto;
+            overflow-wrap: normal;
         }
         .item {
             width: calc(100% - 30px);
@@ -75,9 +75,9 @@
         }
         .item-content {
             width: fit-content;
-            padding: 15px;
-            border-radius: 15px;
-            box-shadow: 1px 2px 8px 2px #C5E7FF;
+            padding: 5px 15px;
+            border-radius: 8px;
+            box-shadow: rgba(17, 17, 26, 0.05) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px;
         }
         .item.left {
             text-align: left;
@@ -92,7 +92,47 @@
             margin-left: auto;
         }
         .input-container {
-            padding: 15px;
+            padding: 15px 0;
+            border-top: solid 1px #ddd;
+            height: 40px
+        }
+        .input-container input {
+            width: calc(75% - 15px);
+            height: 100%;
+            border: none;
+            border-bottom: 1px solid #777;
+        }
+        .input-container input:focus-visible {
+            outline: none;
+            border: none;
+            border-bottom: 1px solid #777;
+        }
+        .input-container button {
+            width: calc(25% - 15px);
+            height: 100%;
+            background-color: #000000;
+            color: #fff;
+            border-radius: 8px;
+        }
+
+        /* scrollbar */
+        /* width */
+        ::-webkit-scrollbar {
+        width: 10px;
+        }
+        /* Track */
+        ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        }
+        /* Handle */
+        ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 5px;
+        }
+        /* Handle on hover */
+        ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+        border-radius: 5px;
         }
     </style>
 </body>
