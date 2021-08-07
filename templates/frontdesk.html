@@ -2,41 +2,77 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Customer Service</title>
+    <!-- <title>Frontdesk System</title> -->
+    <title>{{ title }}</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
 </head>
 <body>
-    <div class="container">
-        <div id="history" class="history-container">
-            <div class="item left">
-                <div class="item-content">
+    <div class="root">
+        <div class="room-container">
+            <div class="room-item" onclick="joinRoom(this)">
+                <div class="room-item-content">
                     <span>
-                        What Can I Help You?
+                        General
                     </span>
                 </div>
             </div>
+            <div class="room-item" onclick="joinRoom(this)">
+                <div class="room-item-content">
+                    <span>
+                        Games
+                    </span>
+                </div>
+            </div>
+            <div class="room-item" onclick="joinRoom(this)">
+                <div class="room-item-content">
+                    <span>
+                        Study
+                    </span>
+                </div>
+            </div>
+            <div class="room-item-bottom">
+                <h4>Current Room:</h4>
+                <p>General</p>
+            </div>
         </div>
-        <div class="input-container">
-            <input type="text" id="input" placeholder="Enter Your Message Here">
-            <button id="send">Send</button>
+        <div class="container">
+            <div id="history" class="history-container">
+                <div class="item left">
+                    <div class="item-content">
+                        <span>
+                            What Can I Help You?
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="input-container">
+                <input type="text" id="input" placeholder="Enter Your Message Here">
+                <button id="send">Send</button>
+            </div>
         </div>
     </div>
+    
     <script>
         window.onload = () => {
             //init
             var socket = io('http://127.0.0.1:5001');
-            const user="frontdesk";
+            const user = $(document).find("title").text() === 'Customer Service' ? "client" : 'frontdesk';
 
             //handle msg send
             document.getElementById('send').addEventListener('click', () => {
                 socket.emit('my broadcast event', {data: $('#input').val(), user: user});
+                $('#input').val('')
             })
+
+            joinRoom = (e) => {            
+                socket.emit('join', {room: $(e).children().children().text().trim(), username: user});
+            }
 
             //handle msg receive
             socket.on('response', function(msg, cb) {
                 $('#history').append(
-                    `<div class="item ${msg.user===user?'right': 'left'}">
+                    `<div class="item ${msg.user===user?'right self': 'left'}">
                         <div class="item-content ${msg.user===user?'right': 'left'}">
                             <span>
                                 ${msg.data}
@@ -54,11 +90,48 @@
                 }
             });
         }
+
     </script>
     <style>
+        .root {
+            display: flex;
+            flex-direction: row;
+            margin: 0 auto;
+            max-width: 650px;
+        }
+        .room-container {
+            display: flex;
+            flex-direction: column;
+            width: 160px;
+            padding: 15px;
+            margin: 15px auto;
+            box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .room-item {
+            width: calc(100% - 30px);
+            margin: 15px 0;
+            padding: 5px 15px;
+            border-radius: 8px;
+            box-shadow: rgba(17, 17, 26, 0.05) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px;
+            background-color: #99ccff;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        .room-item-content {
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .room-item-bottom {
+            margin-top: auto;
+        }
         .container {
             box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
             max-width: 400px;
+            min-width: 400px;
             border-radius: 15px;
             text-align: center;
             padding: 15px;
@@ -90,6 +163,7 @@
         }
         .item-content.right {
             margin-left: auto;
+            background-color: #e6f5ff
         }
         .input-container {
             padding: 15px 0;
@@ -113,6 +187,7 @@
             background-color: #000000;
             color: #fff;
             border-radius: 8px;
+            cursor: pointer;
         }
 
         /* scrollbar */

@@ -11,6 +11,12 @@ socketio = SocketIO(app, ping_timeout=5)
 # socketio.init_app(app, cors_allowed_origins="*")
 # eventlet.monkey_patch()
 
+room_list = {
+    '1001': 'General',
+    '1002': 'Games',
+    '1003': 'Study'
+}
+
 
 @app.route('/', methods=['GET'])
 def index():
@@ -19,12 +25,12 @@ def index():
 
 @app.route('/frontdesk', methods=['GET'])
 def frontdesk():
-    return render_template('frontdesk.html')
+    return render_template('frontdesk.html', title="Frontdesk System")
 
 
 @app.route('/client', methods=['GET'])
 def client():
-    return render_template('client.html')
+    return render_template('frontdesk.html', title="Customer Service")
 
 
 @socketio.on('my event')
@@ -49,7 +55,7 @@ def on_join(data):
     room = data['room']
     join_room(room)
     # send(username + ' has entered the room.', to=room)
-    emit('my response', {'data': username + ' has entered the room.'}, to=room)
+    emit('my response', {'data': username + ' has entered the room.', 'user': username}, to=room)
 
 
 @socketio.on('leave')
