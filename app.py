@@ -11,11 +11,12 @@ socketio = SocketIO(app, ping_timeout=5)
 # socketio.init_app(app, cors_allowed_origins="*")
 # eventlet.monkey_patch()
 
-room_list = {
-    '1001': 'General',
-    '1002': 'Games',
-    '1003': 'Study'
-}
+room_list = [
+    {'id': '1001', 'name': 'General'},
+    {'id': '1002', 'name': 'Games'},
+    {'id': '1003', 'name': 'Study'},
+    {'id': '1000', 'name': 'Loby'}
+]
 
 
 @app.route('/', methods=['GET'])
@@ -25,12 +26,12 @@ def index():
 
 @app.route('/frontdesk', methods=['GET'])
 def frontdesk():
-    return render_template('frontdesk.html', title="Frontdesk System")
+    return render_template('frontdesk.html', title="Frontdesk System", rooms=room_list)
 
 
 @app.route('/client', methods=['GET'])
 def client():
-    return render_template('frontdesk.html', title="Customer Service")
+    return render_template('frontdesk.html', title="Customer Service", rooms=room_list)
 
 
 @socketio.on('my event')
@@ -55,15 +56,27 @@ def on_join(data):
     room = data['room']
     join_room(room)
     # send(username + ' has entered the room.', to=room)
-    emit('my response', {'data': username + ' has entered the room.', 'user': username}, to=room)
+    emit('response', {
+        'data': username + ' has entered the room.',
+        'user': username,
+        'roomName': room,
+        'enterRoom': 'true'
+    }, to=room)
 
 
 @socketio.on('leave')
 def on_leave(data):
+    print(data)
     username = data['username']
     room = data['room']
     leave_room(room)
-    send(username + ' has left the room.', to=room)
+    # send(username + ' has left the room.', to=room)
+    emit('response', {
+        'data': username + ' has left the room.',
+        'user': username,
+        'roomName': 'Loby',
+        'enterRoom': 'true'
+    }, broadcast=True)
 
 
 @socketio.on('my room event')
@@ -76,8 +89,9 @@ def on_my_room_event(data):
 
 
 @socketio.on('connect')
-def test_connect():
-    emit('my response', {'data': 'Connected'})
+def test_connect(message):
+    # emit('response', {'data': 'Connected', 'connect': 'true'})
+    emit('response', {'data': 'connect', 'user': 'frontdesk'}, broadcast=True)
 
 
 @socketio.on('disconnect')

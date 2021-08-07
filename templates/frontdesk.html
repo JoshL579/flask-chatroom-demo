@@ -10,41 +10,29 @@
 <body>
     <div class="root">
         <div class="room-container">
+            {% for room in rooms %}
             <div class="room-item" onclick="joinRoom(this)">
                 <div class="room-item-content">
                     <span>
-                        General
+                        {{room.name}}
                     </span>
                 </div>
             </div>
-            <div class="room-item" onclick="joinRoom(this)">
-                <div class="room-item-content">
-                    <span>
-                        Games
-                    </span>
-                </div>
-            </div>
-            <div class="room-item" onclick="joinRoom(this)">
-                <div class="room-item-content">
-                    <span>
-                        Study
-                    </span>
-                </div>
-            </div>
+            {% endfor %}
             <div class="room-item-bottom">
                 <h4>Current Room:</h4>
-                <p>General</p>
+                <p id="room-name">Loby</p>
             </div>
         </div>
         <div class="container">
             <div id="history" class="history-container">
-                <div class="item left">
+                <!-- <div class="item left">
                     <div class="item-content">
-                        <span>
+                        <span id="auto-msg">
                             What Can I Help You?
                         </span>
                     </div>
-                </div>
+                </div> -->
             </div>
             <div class="input-container">
                 <input type="text" id="input" placeholder="Enter Your Message Here">
@@ -58,6 +46,7 @@
             //init
             var socket = io('http://127.0.0.1:5001');
             const user = $(document).find("title").text() === 'Customer Service' ? "client" : 'frontdesk';
+            // socket.emit('connect', {});
 
             //handle msg send
             document.getElementById('send').addEventListener('click', () => {
@@ -65,22 +54,53 @@
                 $('#input').val('')
             })
 
-            joinRoom = (e) => {            
+            joinRoom = (e) => {     
+                if ($(e).children().children().text().trim() === 'Loby') {
+                    return socket.emit('leave', { room: $('#room-name').text(), username: user });
+                }      
                 socket.emit('join', {room: $(e).children().children().text().trim(), username: user});
             }
 
             //handle msg receive
             socket.on('response', function(msg, cb) {
-                $('#history').append(
-                    `<div class="item ${msg.user===user?'right self': 'left'}">
-                        <div class="item-content ${msg.user===user?'right': 'left'}">
-                            <span>
-                                ${msg.data}
-                            </span>
-                        </div>
-                    </div>`
-                );               
-                if (cb) cb();
+                console.log(msg)
+                if (msg.data === 'connect') {
+                    if (user === 'frontdesk') return;
+                    $('#history').append(
+                        `<div class="item ${msg.user === user ? 'right self' : 'left'}">
+                            <div class="item-content ${msg.user === user ? 'right' : 'left'}">
+                                <span>
+                                    Hi, What Can I Help You ?
+                                </span>
+                            </div>
+                            <div>
+                                <span class="time">
+                                    ${(new Date()).getMonth()+1 + '-' + (new Date()).getDate() + ' ' + (new Date()).toLocaleTimeString('en-GB')}
+                                </span>
+                            </div>
+                        </div>`
+                    );
+                    return
+                }
+                if (!msg.enterRoom) {
+                    $('#history').append(
+                        `<div class="item ${msg.user === user ? 'right self' : 'left'}">
+                            <div class="item-content ${msg.user === user ? 'right' : 'left'}">
+                                <span>
+                                    ${msg.data}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="time">
+                                    ${(new Date()).getMonth() + 1 + '-' + (new Date()).getDate() + ' ' + (new Date()).toLocaleTimeString('en-GB')}
+                                </span>
+                            </div>
+                        </div>`
+                    );
+                    if (cb) cb();
+                    return
+                }
+               $('#room-name').text(msg.roomName)
             });
             
             // bind enter key
@@ -145,6 +165,10 @@
         .item {
             width: calc(100% - 30px);
             margin: 15px
+        }
+        .time {
+            font-size: 12px;
+            color: #777;
         }
         .item-content {
             width: fit-content;
