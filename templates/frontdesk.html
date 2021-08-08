@@ -50,8 +50,13 @@
 
             //handle msg send
             document.getElementById('send').addEventListener('click', () => {
-                socket.emit('my broadcast event', {data: $('#input').val(), user: user});
-                $('#input').val('')
+                if ($('#room-name').text() === 'Loby') {
+                    socket.emit('my broadcast event', { data: $('#input').val(), user: user });
+                    $('#input').val('');
+                    return
+                }
+                socket.emit('my room event', { data: $('#input').val(), user: user, room:  $('#room-name').text()});
+                $('#input').val('');
             })
 
             joinRoom = (e) => {     

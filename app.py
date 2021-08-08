@@ -81,11 +81,13 @@ def on_leave(data):
 
 @socketio.on('my room event')
 def on_my_room_event(data):
+    print('my room event')
     print(data)
-    username = data['username']
+    username = data['user']
     room = data['room']
-    join_room(room)
-    send(username + ' has entered the room.', to=room)
+    # join_room(room)
+    # send(username + ' has entered the room.', to=room)
+    emit('response', {'data': data['data'], 'user': data['user']}, to=room)
 
 
 @socketio.on('connect')

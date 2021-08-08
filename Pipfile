@@ -10,6 +10,7 @@ flask-socketio = "*"
 gunicorn = "*"
 simple-websocket = "*"
 eventlet = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
